@@ -2,11 +2,9 @@ import React, { useState } from "react";
 import { MapsLicencias } from "./MapsLicencias";
 import { Empresas } from "./Empresas";
 import PropTypes from "prop-types";
-import SwipeableViews from "react-swipeable-views";
 import AppBar from "@mui/material/AppBar";
 import Tabs from "@mui/material/Tabs";
 import Tab from "@mui/material/Tab";
-import Typography from "@mui/material/Typography";
 import Box from "@mui/material/Box";
 
 function CustomTabPanel(props) {
@@ -20,11 +18,7 @@ function CustomTabPanel(props) {
       aria-labelledby={`simple-tab-${index}`}
       {...other}
     >
-      {value === index && (
-        <Box sx={{ p: 3 }}>
-          {children}
-        </Box>
-      )}
+      {value === index && <Box sx={{ p: 3 }}>{children}</Box>}
     </div>
   );
 }
@@ -76,7 +70,7 @@ export function RutasIndex() {
           </Tabs>
         </AppBar>
         <CustomTabPanel value={value} index={0}>
-            <Empresas />
+          <Empresas />
         </CustomTabPanel>
         <CustomTabPanel value={value} index={1}>
           <MapsLicencias actualizar={actualizar} />
