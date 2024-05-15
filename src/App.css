@@ -11,7 +11,8 @@ body {
 
 .leaflet-container {
   width: 100wh;
-  height: 75vh;
+  height: 70vh;
+  border-radius: 10px;
 }
 /* 
 ::-webkit-scrollbar {
