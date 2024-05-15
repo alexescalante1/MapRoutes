@@ -1,19 +1,21 @@
 import React, { useState, useEffect } from "react";
 import DataTable from "react-data-table-component";
-import TextField from "@mui/material/TextField";
 import Pagination from "@mui/material/Pagination";
 import Stack from "@mui/material/Stack";
+import Grid from "@mui/material/Grid";
+import Select from "@mui/material/Select";
+import MenuItem from "@mui/material/MenuItem";
+import { TextField, InputLabel, FormControl } from "@mui/material";
 
 const customStyles = {
   rows: {
     style: {
-      minHeight: "60px", // override the row height
+      minHeight: "50px",
     },
   },
   headCells: {
     style: {
-      paddingLeft: "8px", // override the cell padding for head cells
-      paddingRight: "8px",
+      padding: "5px",
       backgroundColor: "#0074C5",
       color: "#FFFFFF",
       textTransform: "uppercase",
@@ -23,53 +25,27 @@ const customStyles = {
   },
   cells: {
     style: {
-      paddingLeft: "8px", // override the cell padding for data cells
+      paddingLeft: "8px",
       paddingRight: "8px",
-      fontSize: "12px",
-      //width: "100%"
+      fontSize: "14px",
     },
   },
 };
 
 export function GenDataTable(Props) {
-  const Sections = 10;
   const [TotalPages, setTotalPages] = useState(1);
   const [Buscador, setBuscador] = useState("");
   const [DataTableLocal, setDataTableLocal] = useState([]);
   const [DataTableLPag, setDataTableLPag] = useState([]);
+  const [lote, setLote] = useState(10);
 
-  //======================================
-  // RESIZE BUSCADOR
-  //======================================
-
-  const [width, setWidth] = useState(
-    "100%"
-    //window.innerWidth > 572 ? "200px" : "100%"
-  );
-
-  useEffect(() => {
-    window.addEventListener("resize", handleResize);
-    return () => {
-      window.removeEventListener("resize", handleResize);
-    };
-  }, []);
+  const handleChange = (event) => {
+    setLote(event.target.value);
+  };
 
   useEffect(() => {
     setDataTableLocal(Props.data);
-    //setDataTableLPag(Props.data);
   }, [Props.data]);
-
-  const handleResize = () => {
-    // if (window.innerWidth > 572) {
-    //   setWidth("200px");
-    // } else {
-    setWidth("100%");
-    //}
-  };
-
-  //======================================
-  // RESIZE BUSCADOR
-  //======================================
 
   const BuscarElemento = (e) => {
     e.preventDefault();
@@ -96,61 +72,74 @@ export function GenDataTable(Props) {
     setDataTableLocal(filtered);
   };
 
-  let DivPages = DataTableLocal.length / Sections;
-  let RoundPage = Math.round(DivPages);
-
   const ChangePage = (e) => {
-    let DataView = DataTableLocal.slice(
-      (e - 1) * Sections,
-      (e - 1) * Sections + Sections
-    );
+    let DataView = DataTableLocal.slice((e - 1) * lote, (e - 1) * lote + lote);
     setDataTableLPag(DataView);
   };
 
   useEffect(() => {
+    let DivPages = DataTableLocal.length / lote;
+    let RoundPage = Math.round(DivPages);
+
     if (RoundPage - DivPages < 0) {
       RoundPage = RoundPage + 1;
     }
     setTotalPages(RoundPage);
-    setDataTableLPag(DataTableLocal?.slice(0, Sections));
-  }, [DataTableLocal]);
+    setDataTableLPag(DataTableLocal?.slice(0, lote));
+  }, [DataTableLocal, lote]);
 
   return (
     <>
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          display: "flex",
-          justifyContent: "flex-end",
-        }}
+      <Grid
+        lg={12}
+        item
+        container
+        spacing={1}
+        sx={{ marginBottom: "8px", marginTop: "8px" }}
       >
-        <TextField
-          id="search-input"
-          label="Buscar"
-          variant="outlined"
-          size="small"
-          value={Buscador}
-          onChange={BuscarElemento}
+        <Grid item lg={8} sm={6} xs={12} />
+        <Grid item lg={3} sm={4} xs={12}>
+          <TextField
+            label="Buscar"
+            variant="outlined"
+            size="small"
+            fullWidth
+            value={Buscador}
+            onChange={BuscarElemento}
+            sx={{ margin: "0px" }}
+          />
+        </Grid>
+        <Grid item lg={1} sm={2} xs={12}>
+          <FormControl fullWidth size="small" sx={{ margin: "0px" }}>
+            <Select value={lote} onChange={handleChange}>
+              <MenuItem value={10}>10</MenuItem>
+              <MenuItem value={20}>20</MenuItem>
+              <MenuItem value={50}>50</MenuItem>
+              <MenuItem value={100}>100</MenuItem>
+              <MenuItem value={500}>500</MenuItem>
+              <MenuItem value={1000}>1000</MenuItem>
+            </Select>
+          </FormControl>
+        </Grid>
+      </Grid>
+      <div style={{ borderRadius: "8px" }}>
+        <DataTable
+          className="justify-center"
+          columns={Props?.columns}
+          data={DataTableLPag}
+          customStyles={customStyles}
+          responsive
+          persistTableHead
+          noDataComponent={
+            <span style={{ margin: "30px" }}>
+              No se han encontrado resultados...
+            </span>
+          }
+          //fixedHeaderfixedHeaderScrollHeight="100px"
+          //progressPending={pending}
+          //selectableRows
         />
       </div>
-
-      <DataTable
-        className="justify-center"
-        columns={Props?.columns}
-        data={DataTableLPag}
-        customStyles={customStyles}
-        responsive
-        persistTableHead
-        noDataComponent={
-          <span style={{ margin: "30px" }}>
-            No se han encontrado resultados...
-          </span>
-        }
-        //fixedHeaderfixedHeaderScrollHeight="100px"
-        //progressPending={pending}
-        //selectableRows
-      />
 
       <Stack
         spacing={2}

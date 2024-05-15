@@ -122,7 +122,7 @@ export function Empresas() {
       idName: "cNombre",
       selector: (row) => row?.cNombre,
       cell: (row) => <div>{row?.cNombre}</div>,
-      maxWidth: '600px',
+      maxWidth: "600px",
       compact: true,
       sortable: true,
       grow: 3,
@@ -146,6 +146,7 @@ export function Empresas() {
       idName: "cCelular",
       selector: (row) => row?.cCelular,
       width: "80px",
+      compact: true,
       center: true,
     },
     {

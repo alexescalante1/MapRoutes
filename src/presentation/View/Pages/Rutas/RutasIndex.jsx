@@ -71,7 +71,7 @@ export function RutasIndex() {
             variant="fullWidth"
             aria-label="full width tabs example"
           >
-            <Tab label="Empresas" {...a11yProps(0)} />
+            <Tab label="Empresas Automotoras" {...a11yProps(0)} />
             <Tab label="Rutas" {...a11yProps(1)} />
           </Tabs>
         </AppBar>
