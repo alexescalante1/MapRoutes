@@ -1,0 +1,307 @@
+import React, { useState, useEffect } from "react";
+import Button from "@mui/material/Button";
+import Dialog from "@mui/material/Dialog";
+import DialogContent from "@mui/material/DialogContent";
+import DialogTitle from "@mui/material/DialogTitle";
+import Slide from "@mui/material/Slide";
+import { Alertas, GenDataTable } from "../../../GenComponents";
+import SettingsSuggestIcon from "@mui/icons-material/SettingsSuggest";
+import {
+  TextField,
+  InputLabel,
+  FormControl,
+  FormHelperText,
+} from "@mui/material";
+
+import LoginIcon from "@mui/icons-material/Login";
+import { useFormik } from "formik";
+import * as yup from "yup";
+import MenuItem from "@mui/material/MenuItem";
+import Select from "@mui/material/Select";
+import DeleteIcon from "@mui/icons-material/Delete";
+import { RutasEmpresaUseCase } from "../../../../Data";
+
+const Transition = React.forwardRef(function Transition(props, ref) {
+  return <Slide direction="up" ref={ref} {...props} />;
+});
+
+export function Empresas() {
+  const [open, setOpen] = React.useState(false);
+  const [actualizar, setActualizar] = React.useState();
+
+  const handleClickOpen = () => {
+    setOpen(true);
+  };
+
+  const handleClose = () => {
+    setOpen(false);
+  };
+
+  //=======================================
+  // VALIDATORS
+  //=======================================
+
+  const objUsuario = {
+    cNombre: "",
+    cDireccion: "",
+    cCelular: "",
+    cTipoEmpresa: "",
+  };
+
+  const validationSchema = yup.object({
+    cNombre: yup
+      .string()
+      .min(3, "Requiere minimo de 3 letras")
+      .required("El nombre es requerido"),
+    cDireccion: yup
+      .string()
+      .min(5, "Requiere minimo de 5 letras")
+      .required("La Direccion es requerido"),
+    cCelular: yup
+      .string()
+      .min(9, "Numero Invalido")
+      .max(9, "Llego al limite de caracteres")
+      .required("El Numero es requerido"),
+    cTipoEmpresa: yup
+      .string()
+      .required("Seleccione un Genero")
+      .min(1, "Seleccione un Genero"),
+  });
+
+  //=======================================
+  // CONSTRUCTOR FORMIK
+  //=======================================
+
+  const formik = useFormik({
+    initialValues: objUsuario,
+    validationSchema: validationSchema,
+    onSubmit: (values, { resetForm }) => {
+      RegistrarEmpresa(values);
+      resetForm();
+    },
+  });
+
+  //=======================================
+  // SUBMIT
+  //=======================================
+
+  const RegistrarEmpresa = async (values) => {
+    setOpen(false);
+    try {
+      const objData = await new RutasEmpresaUseCase().SetNewEmpresa({
+        cNombre: values.cNombre,
+        cDireccion: values.cDireccion,
+        cTipoEmpresa: values.cTipoEmpresa,
+        cCelular: values.cCelular,
+        lEstado: true,
+      });
+      if (objData.success === 1) {
+        Alertas("success", objData.message);
+        setActualizar(values.cNombre);
+      } else {
+        Alertas("error", objData.message);
+      }
+    } catch (e) {
+      Alertas("error", e.message);
+    }
+  };
+
+  //=======================================
+  // EMPRESAS
+  //=======================================
+  const columns = [
+    {
+      name: <SettingsSuggestIcon />,
+      idName: "Actions",
+      selector: (row) => row?.Actions,
+      width: "100px",
+      center: true,
+    },
+    {
+      name: "NOMBRE",
+      idName: "cNombre",
+      selector: (row) => row?.cNombre,
+      cell: (row) => <div>{row?.cNombre}</div>,
+      maxWidth: '600px',
+      compact: true,
+      sortable: true,
+      grow: 3,
+    },
+    {
+      name: "DIRECCIÓN",
+      idName: "cDireccion",
+      selector: (row) => row?.cDireccion,
+      cell: (row) => <div>{row?.cDireccion}</div>,
+      //grow: 3,
+    },
+    {
+      name: "TIPO EMPRESA",
+      idName: "cTipoEmpresa",
+      selector: (row) => row?.cTipoEmpresa,
+      cell: (row) => <div>{row?.cTipoEmpresa}</div>,
+      //grow: 3,
+    },
+    {
+      name: "CEL.",
+      idName: "cCelular",
+      selector: (row) => row?.cCelular,
+      width: "80px",
+      center: true,
+    },
+    {
+      name: "ESTADO",
+      idName: "lEstado",
+      selector: (row) => row?.lEstado,
+      width: "70px",
+      center: true,
+    },
+  ];
+
+  const [dataRows, setdataRows] = useState([]);
+
+  //============================
+  //CARGAR DATA TABLE INICIAL
+  //============================
+
+  const ObternerData = async (e) => {
+    try {
+      const objData = await new RutasEmpresaUseCase().GetAllEmpresas();
+      if (objData?.success === 1) {
+        const rows = [];
+        objData?.data.forEach((items) => {
+          rows.push({
+            Actions: (
+              <>
+                <Button variant="contained" size="small">
+                  <DeleteIcon />
+                </Button>
+              </>
+            ),
+            cNombre: items?.cNombre,
+            cDireccion: items?.cDireccion,
+            cTipoEmpresa: items?.cTipoEmpresa,
+            cCelular: items?.cCelular,
+            lEstado: items?.lEstado == true ? "Activo" : "Baja",
+          });
+        });
+        setdataRows(rows);
+      } else {
+        Alertas("error", objData?.message);
+      }
+    } catch (error) {
+      Alertas("error", error.message);
+    }
+  };
+
+  useEffect(() => {
+    ObternerData();
+  }, [actualizar]);
+
+  return (
+    <>
+      <Button variant="contained" onClick={handleClickOpen}>
+        REGISTRAR EMPRESA
+      </Button>
+
+      <GenDataTable columns={columns} data={dataRows} />
+
+      <Dialog
+        open={open}
+        TransitionComponent={Transition}
+        keepMounted
+        onClose={handleClose}
+        maxWidth="xs"
+      >
+        <DialogTitle>{"Registro de Empresas"}</DialogTitle>
+        <DialogContent>
+          <form onSubmit={formik.handleSubmit}>
+            <TextField
+              fullWidth
+              id="cNombre"
+              name="cNombre"
+              label="Nombres"
+              variant="standard"
+              type="text"
+              value={formik.values?.cNombre}
+              onChange={formik.handleChange}
+              error={formik.touched?.cNombre && Boolean(formik.errors?.cNombre)}
+              helperText={formik.touched?.cNombre && formik.errors?.cNombre}
+            />
+
+            <TextField
+              fullWidth
+              id="cDireccion"
+              name="cDireccion"
+              label="Dirección"
+              variant="standard"
+              type="text"
+              value={formik.values?.cDireccion}
+              onChange={formik.handleChange}
+              error={
+                formik.touched?.cDireccion && Boolean(formik.errors?.cDireccion)
+              }
+              helperText={
+                formik.touched?.cDireccion && formik.errors?.cDireccion
+              }
+            />
+
+            <TextField
+              fullWidth
+              id="cCelular"
+              name="cCelular"
+              label="Celular"
+              variant="standard"
+              type="number"
+              value={formik.values?.cCelular}
+              onChange={formik.handleChange}
+              error={
+                formik.touched?.cCelular && Boolean(formik.errors?.cCelular)
+              }
+              helperText={formik.touched?.cCelular && formik.errors?.cCelular}
+            />
+
+            <FormControl
+              fullWidth
+              variant="standard"
+              error={
+                formik.touched?.cTipoEmpresa &&
+                Boolean(formik.errors?.cTipoEmpresa)
+              }
+            >
+              <InputLabel htmlFor="cTipoEmpresa">Tipo de Empresa</InputLabel>
+              <Select
+                fullWidth
+                id="cTipoEmpresa"
+                name="cTipoEmpresa"
+                value={formik.values?.cTipoEmpresa}
+                onChange={formik.handleChange}
+              >
+                <MenuItem value={"Individual"}>Individual</MenuItem>
+                <MenuItem value={"Cooperativa"}>Cooperativa</MenuItem>
+              </Select>
+              <FormHelperText
+                error={
+                  formik.touched?.cTipoEmpresa &&
+                  Boolean(formik.errors?.cTipoEmpresa)
+                }
+              >
+                {formik.touched?.cTipoEmpresa && formik.errors?.cTipoEmpresa}
+              </FormHelperText>
+            </FormControl>
+
+            <Button
+              fullWidth
+              sx={{ marginBottom: "10px", marginTop: "15px" }}
+              color="primary"
+              variant="contained"
+              type="submit"
+              endIcon={<LoginIcon />}
+            >
+              REGISTRAR
+            </Button>
+          </form>
+        </DialogContent>
+      </Dialog>
+    </>
+  );
+}
