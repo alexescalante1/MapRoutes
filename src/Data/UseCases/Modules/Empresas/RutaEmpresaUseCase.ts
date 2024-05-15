@@ -1,6 +1,6 @@
 import { IRutaEmpresa } from "../../../../Domain/Interfaces";
 
-import { SetNewEmpresaFn, GetAllEmpresasFn } from "./Empresas";
+import { SetNewEmpresaFn, GetAllEmpresasFn, DeleteEmpresaFn } from "./Empresas";
 
 export class RutasEmpresaUseCase implements IRutaEmpresa {
   async SetNewEmpresa(body: IRutaEmpresa.NsEmpresa): Promise<IRutaEmpresa.NsResponse> {
@@ -11,7 +11,7 @@ export class RutasEmpresaUseCase implements IRutaEmpresa {
     return await GetAllEmpresasFn();
   }
 
-  async DeleteNode(id: string): Promise<string> {
-    return "true"; //await DeleteNodeFn(id);
+  async DeleteEmpresa(id: string): Promise<boolean> {
+    return await DeleteEmpresaFn(id);
   }
 }

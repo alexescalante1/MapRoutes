@@ -67,14 +67,22 @@ export async function GetAllEmpresasFn(): Promise<IRutaEmpresa.NsResponse> {
   }
 }
 
-export async function DeleteEmpresaFn(id: string): Promise<string> {
-  const fireRel = await GenFirebaseServiceCls.GetAllFillDocuments(
-    "RelNodos",
-    "NodoOrigen",
-    "==",
-    id
-  );
+export async function DeleteEmpresaFn(id: string): Promise<boolean> {
+  try {
+    const PrtInit = new FragmentData(
+      process.env.REACT_APP_KPRT ?? ""
+    ).GtParttnDtLS(process.env.REACT_APP_CPRT ?? "", "Indt");
 
-  await GenFirebaseServiceCls.SetDeleteDocument("Nodos", id);
-  return Math.random().toString();
+    const ObjInit = PrtInit ? JSON.parse(PrtInit) : false;
+
+    await GenFirebaseServiceCls.SetDeleteDocument(
+      process.env.REACT_APP_BASE +
+        ObjInit.find((x: any) => x?.data?.id === 1)?.data?.value,
+      id
+    );
+
+    return true;
+  } catch (e: any) {
+    return false;
+  }
 }

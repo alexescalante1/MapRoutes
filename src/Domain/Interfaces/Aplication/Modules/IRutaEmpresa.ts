@@ -2,11 +2,13 @@ import { MdlBaseResponse } from "../../../Models";
 import { MdlEmpresa } from "../../../Models";
 
 export interface IRutaEmpresa {
-  SetNewEmpresa: (body: IRutaEmpresa.NsEmpresa) => Promise<IRutaEmpresa.NsResponse>;
+  SetNewEmpresa: (
+    body: IRutaEmpresa.NsEmpresa
+  ) => Promise<IRutaEmpresa.NsResponse>;
 
   GetAllEmpresas: () => Promise<IRutaEmpresa.NsResponse>;
 
-  DeleteNode: (id: string) => Promise<string>;
+  DeleteEmpresa: (id: string) => Promise<boolean>;
 }
 
 export namespace IRutaEmpresa {

@@ -56,16 +56,16 @@ export function Empresas() {
     cDireccion: yup
       .string()
       .min(5, "Requiere minimo de 5 letras")
-      .required("La Direccion es requerido"),
+      .required("La Dirección es requerida"),
     cCelular: yup
       .string()
       .min(9, "Numero Invalido")
       .max(9, "Llego al limite de caracteres")
-      .required("El Numero es requerido"),
+      .required("El Número es requerido"),
     cTipoEmpresa: yup
       .string()
-      .required("Seleccione un Genero")
-      .min(1, "Seleccione un Genero"),
+      .required("Seleccione un tipo")
+      .min(1, "Seleccione un tipo"),
   });
 
   //=======================================
@@ -114,7 +114,7 @@ export function Empresas() {
       name: <SettingsSuggestIcon />,
       idName: "Actions",
       selector: (row) => row?.Actions,
-      width: "100px",
+      width: "50px",
       center: true,
     },
     {
@@ -132,14 +132,14 @@ export function Empresas() {
       idName: "cDireccion",
       selector: (row) => row?.cDireccion,
       cell: (row) => <div>{row?.cDireccion}</div>,
-      //grow: 3,
     },
     {
       name: "TIPO EMPRESA",
       idName: "cTipoEmpresa",
       selector: (row) => row?.cTipoEmpresa,
       cell: (row) => <div>{row?.cTipoEmpresa}</div>,
-      //grow: 3,
+      compact: true,
+      center: true,
     },
     {
       name: "CEL.",
@@ -160,6 +160,20 @@ export function Empresas() {
 
   const [dataRows, setdataRows] = useState([]);
 
+  const deleteEmpresa = async (id) => {
+    try {
+      const res = await new RutasEmpresaUseCase().DeleteEmpresa(id);
+      if (res === true) {
+        Alertas("success", "La empresa se ha eliminado!");
+        setActualizar(id);
+      } else {
+        Alertas("error", "Ups. Ocurrio un problema...");
+      }
+    } catch (error) {
+      Alertas("error", error.message);
+    }
+  };
+
   //============================
   //CARGAR DATA TABLE INICIAL
   //============================
@@ -173,16 +187,52 @@ export function Empresas() {
           rows.push({
             Actions: (
               <>
-                <Button variant="contained" size="small">
+                <div
+                  style={{
+                    color: "white",
+                    background: "red",
+                    borderRadius: "5px",
+                    padding: "3px",
+                    cursor: "pointer",
+                  }}
+                  onClick={async () => deleteEmpresa(items?.id)}
+                >
                   <DeleteIcon />
-                </Button>
+                </div>
               </>
             ),
             cNombre: items?.cNombre,
             cDireccion: items?.cDireccion,
             cTipoEmpresa: items?.cTipoEmpresa,
             cCelular: items?.cCelular,
-            lEstado: items?.lEstado == true ? "Activo" : "Baja",
+            lEstado:
+              items?.lEstado == true ? (
+                <div
+                  style={{
+                    background: "green",
+                    color: "white",
+                    borderRadius: "5px",
+                    padding: "3px",
+                    cursor: "pointer",
+                    userSelect: "none",
+                  }}
+                >
+                  Vigente
+                </div>
+              ) : (
+                <div
+                  style={{
+                    background: "red",
+                    color: "white",
+                    borderRadius: "5px",
+                    padding: "3px",
+                    cursor: "pointer",
+                    userSelect: "none",
+                  }}
+                >
+                  Baja
+                </div>
+              ),
           });
         });
         setdataRows(rows);
@@ -253,8 +303,13 @@ export function Empresas() {
               label="Celular"
               variant="standard"
               type="number"
+              inputProps={{ maxLength: 9 }}
               value={formik.values?.cCelular}
-              onChange={formik.handleChange}
+              onChange={(e) => {
+                if (e.target.value.length <= 9) {
+                  formik.handleChange(e);
+                }
+              }}
               error={
                 formik.touched?.cCelular && Boolean(formik.errors?.cCelular)
               }
