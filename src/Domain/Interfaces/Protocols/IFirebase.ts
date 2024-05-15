@@ -21,6 +21,11 @@ export interface IFirebaseService {
     id: string,
     data: any
   ) => Promise<void>;
+  updateDocumentFields: (
+    cCollection: string,
+    docId: string,
+    fieldsToUpdate: Record<string, any>
+  ) => Promise<void>;
   SetDeleteDocument: (collection: string, id: string) => Promise<void>;
   UploadFileBlob: (
     file: any,

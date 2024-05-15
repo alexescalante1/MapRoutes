@@ -1,12 +1,7 @@
 import React, { useState, useEffect } from "react";
 import "react-toastify/dist/ReactToastify.css";
 import { RutasMapa } from "../../../GenComponents";
-// import RegistrarRutas from "./RutasOpciones/RegistrarRutas";
-// import {
-//   AutorizacionDT,
-//   RutasDT,
-// } from "../../../../../../../Data/UseCases/Apps";
-
+import { RutasEmpresaUseCase } from "../../../../Data";
 import Box from "@mui/material/Box";
 import Tabs from "@mui/material/Tabs";
 import Tab from "@mui/material/Tab";
@@ -66,32 +61,25 @@ export function MapsLicencias({ actualizar }) {
   //===========================================================
 
   const ObternerData = async (e) => {
-    // const Access = ApiContextRequest("23");
-    // if (Access.cPath != "ErrorDeAcceso") {
-    //   try {
-    //     const data = await new RutasDT(
-    //       Access.cPath,
-    //       Access.cMethod
-    //     ).GetAllRutas();
-    //     if (data?.header?.success === 1) {
-    //       const rows = [];
-    //       data?.data.forEach((items) => {
-    //         rows.push({
-    //           label: items?.cRucEmpresa + " / " + items?.cNombreComercial,
-    //           idAuthr: items?.idAutorizacion,
-    //           name: items?.cNombreComercial,
-    //           idEmpresa: items?.idEmpresa,
-    //           Ruc: items?.cRucEmpresa,
-    //           arrCoordenada: items?.arrCoordenada,
-    //         });
-    //       });
-    //       setDataRouters(rows);
-    //       //console.log(rows);
-    //     } else {
-    //       Alertas("error", data?.header?.message);
-    //     }
-    //   } catch (e) {}
-    // }
+    try {
+      const objData = await new RutasEmpresaUseCase().GetAllEmpresas();
+      if (objData?.success === 1) {
+        const rows = [];
+        objData?.data.forEach((items) => {
+          rows.push({
+            label: items?.cRucEmpresa + " / " + items?.cNombre,
+            idAuthr: items?.id,
+            name: items?.cNombre,
+            idEmpresa: items?.id,
+            Ruc: items?.cRucEmpresa,
+            arrCoordenada: items?.arrCoordenada,
+          });
+        });
+        setDataRouters(rows);
+      } else {
+        Alertas("error", data?.header?.message);
+      }
+    } catch (e) {}
   };
 
   useEffect(() => {
@@ -310,7 +298,7 @@ export function MapsLicencias({ actualizar }) {
 
   // console.log("COPY",RUTA_BASE_COPY);
   // console.log("BSE",RUTA_BASE0);
-
+  
   function GeneraPuntosRuta(RUTA_BASE0) {
     let RUTA_BASE_COPY = RUTA_BASE0;
     for (let i = 0; i < RUTA_BASE_COPY.length; i++) {
@@ -473,7 +461,6 @@ export function MapsLicencias({ actualizar }) {
           </Box>
         </Grid>
       </Grid>
-
     </>
   );
 }
@@ -528,14 +515,13 @@ export function RegistrarPointsRuta({
 
   const RegRutaIda = async (e) => {
     e.preventDefault();
-    const RUTA_IDA_STRUCT = await new RutasDT().ObtRutasRegistro(
+    const RUTA_IDA_STRUCT = await new RutasEmpresaUseCase().ObtRutasRegistro(
       "RUTA DE IDA",
       document.getElementById("ColorIda").value,
       POINTS_OF_REG
     );
 
     if (RUTA_IDA_STRUCT.GenPoints.length > 0) {
-      //BUSCADOR
       var RutaRegistrar = ALL_ROUTES.find(
         (x) => x.ID_AUTH_ROUTES == "REGISTRAR_RUTA_PREV"
       );
@@ -552,13 +538,12 @@ export function RegistrarPointsRuta({
 
   const RegRutaRet = async (e) => {
     e.preventDefault();
-    const RUTA_RET_STRUCT = await new RutasDT().ObtRutasRegistro(
+    const RUTA_RET_STRUCT = await new RutasEmpresaUseCase().ObtRutasRegistro(
       "RUTA DE RETORNO",
       document.getElementById("ColorRet").value,
       POINTS_OF_REG
     );
     if (RUTA_RET_STRUCT.GenPoints.length > 0) {
-      //BUSCADOR
       var RutaRegistrar = ALL_ROUTES.find(
         (x) => x.ID_AUTH_ROUTES == "REGISTRAR_RUTA_PREV"
       );
@@ -578,35 +563,28 @@ export function RegistrarPointsRuta({
 
   const RegRutas = async (e) => {
     e.preventDefault();
-    //BUSCADOR
+
     var RutaRegistrar = ALL_ROUTES.find(
       (x) => x.ID_AUTH_ROUTES == "REGISTRAR_RUTA_PREV"
     );
 
     if (RutaRegistrar.arrCoordenada.length == 2) {
-      const stringReg = JSON.stringify(RutaRegistrar.arrCoordenada);
-      const Access = ApiContextRequest("25");
-      if (Access.cPath != "ErrorDeAcceso") {
-        try {
-          const data = await new RutasDT(
-            Access.cPath,
-            Access.cMethod
-          ).SetRutaRegistrar({
-            idEmpresa: dataBuscarAuth?.idEmpresa,
-            arrCoordenada: stringReg,
-          });
-          //console.log(data);
-          if (data) {
-            Alertas("success", "Ruta Almacenado Correctamente");
-            setReloadData(reloadData + 1);
-            setALL_ROUTES([]);
-            setAutoCompleteVal(" ");
-          } else {
-            Alertas("error", data?.header?.message);
-          }
-        } catch (e) {
-          Alertas("error", "Error Desconocido");
+      try {
+        const data = await new RutasEmpresaUseCase().UpdateRuta({
+          id: dataBuscarAuth?.idEmpresa,
+          arrCoordenada: JSON.stringify(RutaRegistrar.arrCoordenada),
+        });
+
+        if (data) {
+          Alertas("success", "Ruta Almacenado Correctamente");
+          setReloadData(reloadData + 1);
+          setALL_ROUTES([]);
+          setAutoCompleteVal(" ");
+        } else {
+          Alertas("error", data?.header?.message);
         }
+      } catch (e) {
+        Alertas("error", "Error Desconocido");
       }
     } else {
       Alertas("error", "Ingrese Ambas Rutas");
@@ -645,7 +623,6 @@ export function RegistrarPointsRuta({
   };
   const RegPointsTwo = async (e) => {
     e.preventDefault();
-    //BUSCADOR
     var RutaRegistrar = ALL_ROUTES.find(
       (x) => x.ID_AUTH_ROUTES == "REGISTRAR_RUTA_PREV"
     );
@@ -817,7 +794,8 @@ export function VisualizarRutas({
 
   const RegRutaIda = async (e) => {
     e.preventDefault();
-    const RUTA_IDA_STRUCT = await new RutasDT().ObtRutasRegistro(
+    console.log("Estoy aqui");
+    const RUTA_IDA_STRUCT = await new RutasEmpresaUseCase().ObtRutasRegistro(
       "RUTA DE IDA",
       document.getElementById("ColorIda").value,
       POINTS_OF_REG
@@ -841,7 +819,7 @@ export function VisualizarRutas({
 
   const RegRutaRet = async (e) => {
     e.preventDefault();
-    const RUTA_RET_STRUCT = await new RutasDT().ObtRutasRegistro(
+    const RUTA_RET_STRUCT = await new RutasEmpresaUseCase().ObtRutasRegistro(
       "RUTA DE RETORNO",
       document.getElementById("ColorRet").value,
       POINTS_OF_REG
@@ -873,31 +851,22 @@ export function VisualizarRutas({
     );
 
     if (RutaRegistrar.arrCoordenada.length == 2) {
-      const stringReg = JSON.stringify(RutaRegistrar.arrCoordenada);
+      try {
+        const data = await new RutasEmpresaUseCase().UpdateRuta({
+          id: dataBuscarAuth?.idEmpresa,
+          arrCoordenada: JSON.stringify(RutaRegistrar.arrCoordenada),
+        });
 
-      console.log(stringReg);
-
-      const Access = ApiContextRequest("26");
-      if (Access.cPath != "ErrorDeAcceso") {
-        try {
-          const data = await new RutasDT(
-            Access.cPath + "?idEmpresa=" + dataBuscarAuth?.idEmpresa,
-            Access.cMethod
-          ).SetRutaEditar({
-            arrCoordenada: stringReg,
-          });
-          console.log(data);
-          if (data) {
-            Alertas("success", "Ruta Almacenado Correctamente");
-            setReloadData(reloadData + 1);
-            setALL_ROUTES([]);
-            setAutoCompleteVal(" ");
-          } else {
-            Alertas("error", data?.header?.message);
-          }
-        } catch (e) {
-          Alertas("error", "Error Desconocido");
+        if (data) {
+          Alertas("success", "Ruta Almacenado Correctamente");
+          setReloadData(reloadData + 1);
+          setALL_ROUTES([]);
+          setAutoCompleteVal(" ");
+        } else {
+          Alertas("error", data?.header?.message);
         }
+      } catch (e) {
+        Alertas("error", "Error Desconocido");
       }
     } else {
       Alertas("error", "Ingrese Ambas Rutas");

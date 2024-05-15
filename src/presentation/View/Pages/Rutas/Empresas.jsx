@@ -43,6 +43,7 @@ export function Empresas() {
 
   const objUsuario = {
     cNombre: "",
+    cRucEmpresa: "",
     cDireccion: "",
     cCelular: "",
     cTipoEmpresa: "",
@@ -53,6 +54,11 @@ export function Empresas() {
       .string()
       .min(3, "Requiere minimo de 3 letras")
       .required("El nombre es requerido"),
+    cRucEmpresa: yup
+      .string()
+      .min(11, "Numero Invalido")
+      .max(11, "Llego al limite de caracteres")
+      .required("El Número es requerido"),
     cDireccion: yup
       .string()
       .min(5, "Requiere minimo de 5 letras")
@@ -90,10 +96,12 @@ export function Empresas() {
     try {
       const objData = await new RutasEmpresaUseCase().SetNewEmpresa({
         cNombre: values.cNombre,
+        cRucEmpresa: values.cRucEmpresa,
         cDireccion: values.cDireccion,
         cTipoEmpresa: values.cTipoEmpresa,
         cCelular: values.cCelular,
         lEstado: true,
+        arrCoordenada: "",
       });
       if (objData.success === 1) {
         Alertas("success", objData.message);
@@ -122,10 +130,18 @@ export function Empresas() {
       idName: "cNombre",
       selector: (row) => row?.cNombre,
       cell: (row) => <div>{row?.cNombre}</div>,
-      maxWidth: "600px",
+      minWidth: "200px",
       compact: true,
       sortable: true,
       grow: 3,
+    },
+    {
+      name: "RUC",
+      idName: "cRucEmpresa",
+      selector: (row) => row?.cRucEmpresa,
+      cell: (row) => <div>{row?.cRucEmpresa}</div>,
+      maxWidth: "100px",
+      compact: true,
     },
     {
       name: "DIRECCIÓN",
@@ -202,6 +218,7 @@ export function Empresas() {
               </>
             ),
             cNombre: items?.cNombre,
+            cRucEmpresa: items?.cRucEmpresa,
             cDireccion: items?.cDireccion,
             cTipoEmpresa: items?.cTipoEmpresa,
             cCelular: items?.cCelular,
@@ -277,6 +294,29 @@ export function Empresas() {
               onChange={formik.handleChange}
               error={formik.touched?.cNombre && Boolean(formik.errors?.cNombre)}
               helperText={formik.touched?.cNombre && formik.errors?.cNombre}
+            />
+
+            <TextField
+              fullWidth
+              id="cRucEmpresa"
+              name="cRucEmpresa"
+              label="Ruc"
+              variant="standard"
+              type="number"
+              inputProps={{ maxLength: 11 }}
+              value={formik.values?.cRucEmpresa}
+              onChange={(e) => {
+                if (e.target.value.length <= 11) {
+                  formik.handleChange(e);
+                }
+              }}
+              error={
+                formik.touched?.cRucEmpresa &&
+                Boolean(formik.errors?.cRucEmpresa)
+              }
+              helperText={
+                formik.touched?.cRucEmpresa && formik.errors?.cRucEmpresa
+              }
             />
 
             <TextField

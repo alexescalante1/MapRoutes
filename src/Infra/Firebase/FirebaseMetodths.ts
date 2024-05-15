@@ -72,6 +72,19 @@ export const GenFirebaseServiceCls: IFirebaseService = {
     }
   },
 
+  async updateDocumentFields(
+    cCollection: string,
+    docId: string,
+    fieldsToUpdate: Record<string, any>
+  ): Promise<void> {
+    try {
+      const docRef = doc(db, cCollection, docId);
+      await updateDoc(docRef, fieldsToUpdate);
+    } catch (error) {
+      console.error("Error al actualizar los campos:", error);
+    }
+  },
+
   async SetUpdateDocument(
     cCollection: string,
     id: string,
